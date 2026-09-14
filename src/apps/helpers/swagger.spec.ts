@@ -35,7 +35,7 @@ describe('swagger setup', () => {
 			expect(response.body.info).toEqual({
 				contact: {},
 				description: 'This is the API documentation for the Schulcloud-Verbund-Software File Storage API',
-				title: 'Schulcloud-Verbund-Software File Storage API',
+				title: 'Schulcloud-Verbund-Software File Storage API (featuremaxxing)',
 				// care about api changes when version changes
 				version: '3.0',
 			});

@@ -3,7 +3,7 @@ import { DocumentBuilder, type SwaggerDocumentOptions, SwaggerModule } from '@ne
 
 const config = new DocumentBuilder()
 	.addServer('/api/v3/') // add default path as server to have correct urls ald let 'try out' work
-	.setTitle('Schulcloud-Verbund-Software File Storage API')
+	.setTitle('Schulcloud-Verbund-Software File Storage API (featuremaxxing)')
 	.setDescription('This is the API documentation for the Schulcloud-Verbund-Software File Storage API')
 	.setVersion('3.0')
 	/** set authentication for all routes enabled by default */
