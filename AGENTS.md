@@ -42,6 +42,7 @@ Repos (Forks von `hpi-schul-cloud`), Default-Branch jeweils `main`:
 - Jeder Wechsel auf ein anderes Feature setzt die Staging-Daten auf den Stand von Live zurück.
 - Repos ohne den Branch laufen auf Staging mit dem Live-Stand.
 - Der Build nutzt das `Dockerfile` des Repos und muss ohne Zusatzschritte durchlaufen.
+- **Feature-Flags / Umgebungsvariablen:** Default im Code bleibt „aus“. Den Wert setzt ein PR in `featuremaxxing/nbc-teststack` (`compose.yml`, Server-Flags unter `x-server-env`). Nach dem Hochladen übernimmt Staging ihn automatisch ohne Datenverlust. Live übernimmt ihn per `docker compose up -d <services>`. Solange Live den Code nicht hat, wird das Flag dort ignoriert.
 - Mails werden auch aus Staging **wirklich verschickt** (SMTP). Keine fremden Adressen verwenden.
 - Nicht vorhanden, daher nicht testbar: Etherpad, Collabora, H5P, tldraw, BigBlueButton, Kalender, Virenscan, moin.schule/OAuth, Nextcloud.
 - Upstream-Stand holen: „Sync fork“ auf GitHub. Das deployt Live neu.
