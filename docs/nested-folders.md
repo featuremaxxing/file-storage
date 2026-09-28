@@ -112,3 +112,7 @@ verfügbar. `npx tsc --noEmit` lief damit sauber durch (keine Typfehler), `npm t
 sich wegen einer Inkompatibilität der `bson`/`mongodb`-Pakete mit Node 18 nicht ausführen. Vor
 dem Merge sollten die bestehenden und ggf. neue Unit-/Integrationstests unter Node 24 in CI
 laufen.
+
+## Status
+
+In manueller Prüfung auf Staging.
