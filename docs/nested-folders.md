@@ -115,6 +115,32 @@ normalisiert beim Lesen weiterhin auf `EntityId | undefined`, damit der restlich
 und fehlendes Feld schon vorher gleich, ist also mit alten (fehlendem Feld) und neuen (explizitem
 `null`) Root-Datensätzen kompatibel.
 
+### Zweiter, tieferliegender Bug zum selben Symptom: `ObjectIdType` erzeugt bei `null` eine zufällige ID
+
+Auch nach dem obigen Fix blieb die Wurzelebene nach dem Verlassen und erneuten Betreten des
+Dateibereichs leer (Unterordner/Dateien "verschwunden"), obwohl sie in der Datenbank korrekt mit
+`folder: null` vorlagen. Ursache: `FileRecordScope.byFolderId` baut die Anfrage
+`{ folderId: folderId ?? null }` — das Feld `folderId` ist aber über
+`@Property({ type: ObjectIdType, ... })` typisiert, und MikroORM führt jeden Anfragewert für ein
+typisiertes Feld durch dessen `convertToDatabaseValue`. Die gemeinsame `ObjectIdType`-Klasse
+(`src/shared/repo/types/object-id.type.ts`) rief darin bislang **unbedingt** `new ObjectId(value)`
+auf — und der MongoDB-Treiber erzeugt bei `new ObjectId(null)`/`new ObjectId(undefined)` eine
+**neue, zufällige ID**, statt `null` durchzureichen. Aus der beabsichtigten Anfrage
+`{ folder: null }` wurde dadurch zur Laufzeit `{ folder: <zufällige ID> }` — die auf **keinen**
+Datensatz passt. Jede Auflistung der Wurzelebene lieferte dadurch grundsätzlich ein leeres
+Ergebnis; sichtbar wurde das erst, sobald keine älteren, direkt aus Erstellen/Verschieben-Antworten
+stammenden Daten mehr im Frontend-Store zwischengespeichert waren (z. B. nach dem Verlassen und
+Neubetreten des Dateibereichs).
+
+`folderId` ist das erste Feld in der gesamten Codebasis, das mit `ObjectIdType` typisiert ist und
+jemals mit `null` abgefragt wird (alle anderen Felder wie `parentId`, `creatorId`,
+`storageLocationId` werden immer mit echten IDs abgefragt) — der Bug lag daher vorher latent im
+gemeinsamen Typ, unbemerkt, weil ihn nie zuvor jemand mit `null` ausgelöst hat.
+
+**Fix:** `ObjectIdType.convertToDatabaseValue` gibt `null`/`undefined` jetzt unverändert zurück,
+statt sie an `new ObjectId(...)` zu übergeben. Test ergänzt in
+`object-id.type.spec.ts`.
+
 ## Bewusst nicht umgesetzt (Scope-Entscheidungen)
 
 - **Rekursive Ordnergröße/-statistik**: `GET /file/stats/:parentType/:parentId` bleibt exakt wie

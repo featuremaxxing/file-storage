@@ -1,4 +1,5 @@
 import { MongoPlatform, ObjectId, Platform } from '@mikro-orm/mongodb';
+import { type EntityId } from '@shared/domain/types';
 import { ObjectIdType } from './object-id.type';
 
 class InvalidPlatform extends Platform {}
@@ -23,6 +24,18 @@ describe(ObjectIdType.name, () => {
 
 				expect(id).toBeInstanceOf(ObjectId);
 				expect(id.toHexString()).toBe(entityId);
+			});
+		});
+
+		describe('with null or undefined', () => {
+			it('should pass the value through unchanged instead of generating a random id', () => {
+				const { propType, platform } = setup();
+
+				// new ObjectId(null/undefined) would otherwise silently generate a random id,
+				// breaking any query that filters a nullable ObjectIdType property by null
+				// (e.g. FileRecordEntity.folderId for "root level").
+				expect(propType.convertToDatabaseValue(null as unknown as EntityId, platform)).toBeNull();
+				expect(propType.convertToDatabaseValue(undefined as unknown as EntityId, platform)).toBeUndefined();
 			});
 		});
 
