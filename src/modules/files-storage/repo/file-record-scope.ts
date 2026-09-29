@@ -59,7 +59,7 @@ export class FileRecordScope extends Scope<FileRecordEntity> {
 		return this;
 	}
 
-	public byFolderId(folderId?: EntityId): this {
+	public byFolderId(folderId?: EntityId | null): this {
 		this.addQuery({ folderId: folderId ?? null });
 
 		return this;

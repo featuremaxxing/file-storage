@@ -29,7 +29,7 @@ export interface FileRecordRepo {
 	 */
 	findByParentAndFolderId(
 		parentId: EntityId,
-		folderId?: EntityId,
+		folderId?: EntityId | null,
 		options?: FindOptions<FileRecord>
 	): Promise<Counted<FileRecord[]>>;
 

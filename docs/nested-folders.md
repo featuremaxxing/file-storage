@@ -95,6 +95,26 @@ akzeptabel ist.
   (`assertNoCycle`, wirft `FOLDER_CANNOT_BE_MOVED_INTO_ITSELF`).
 - Prüft Namenskollisionen auf der Zielebene.
 
+### Auf Staging gefundener Bug: Verschieben zur Wurzelebene wurde nie persistiert
+
+`FileRecord.setFolderId(undefined)` (Verschieben zurück auf die oberste Ebene, `targetFolderId`
+ist dann `undefined`) hat den Wert zwar im Domänenobjekt korrekt gelöscht, aber **MikroORM
+überspringt bei `em.assign()` Felder, deren Wert `undefined` ist** ("nicht angegeben" wird nicht
+von "explizit auf leer setzen" unterschieden). Die API-Antwort direkt nach dem Verschieben zeigte
+dadurch fälschlich Erfolg (sie stammt aus dem In-Memory-Domänenobjekt), aber in der Datenbank
+blieb die alte `folderId` bestehen — bei jedem erneuten Laden (Reload, neue Anfrage) war das
+Element wieder in seinem alten Unterordner "verschwunden", nicht auf der Wurzelebene sichtbar,
+während die flache Statistik (zählt unabhängig von `folderId`) es weiterhin korrekt mitzählte.
+
+**Fix:** `setFolderId()` speichert beim Leeren jetzt explizit `null` statt `undefined` —
+MikroORM behandelt `null` korrekt als "wirklich auf leer setzen" und persistiert es. `folderId`
+ist entsprechend jetzt durchgängig als `EntityId | null | undefined` typisiert
+(`FileRecordProps`, `FileRecordEntity`, `ParentInfo`, `FileRecordResponse`); `getFolderId()`
+normalisiert beim Lesen weiterhin auf `EntityId | undefined`, damit der restliche Code
+(Zyklus-Prüfung, Scope-Filter) unverändert bleibt. `FileRecordScope.byFolderId` matchte `null`
+und fehlendes Feld schon vorher gleich, ist also mit alten (fehlendem Feld) und neuen (explizitem
+`null`) Root-Datensätzen kompatibel.
+
 ## Bewusst nicht umgesetzt (Scope-Entscheidungen)
 
 - **Rekursive Ordnergröße/-statistik**: `GET /file/stats/:parentType/:parentId` bleibt exakt wie

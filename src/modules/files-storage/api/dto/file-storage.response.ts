@@ -98,8 +98,8 @@ export class FileRecordResponse {
 	@ApiPropertyOptional({ description: 'True if this entry represents a folder rather than an uploaded file.' })
 	isFolder?: boolean;
 
-	@ApiPropertyOptional({ description: 'Id of the containing folder. Omitted/undefined for the root level.' })
-	folderId?: string;
+	@ApiPropertyOptional({ description: 'Id of the containing folder. Omitted/null for the root level.' })
+	folderId?: string | null;
 }
 
 export class FileRecordListResponse extends PaginationResponse<FileRecordResponse[]> {

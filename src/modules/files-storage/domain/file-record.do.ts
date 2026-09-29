@@ -67,7 +67,13 @@ export interface FileRecordProps extends AuthorizableObject {
 	contentLastModifiedAt?: Date;
 	storageType: StorageType;
 	isFolder?: boolean;
-	folderId?: EntityId;
+	/**
+	 * null = explicitly at the root level, undefined = not yet decided/unused by the caller.
+	 * MikroORM's em.assign() skips properties whose value is undefined (treated as "not
+	 * provided"), so clearing this back to root via an update MUST persist null, not undefined,
+	 * or the change silently never reaches the database. See setFolderId().
+	 */
+	folderId?: EntityId | null;
 }
 
 export class FileRecord extends DomainObject<FileRecordProps> {
@@ -286,11 +292,11 @@ export class FileRecord extends DomainObject<FileRecordProps> {
 	}
 
 	public getFolderId(): EntityId | undefined {
-		return this.props.folderId;
+		return this.props.folderId ?? undefined;
 	}
 
 	public setFolderId(folderId: EntityId | undefined): void {
-		this.props.folderId = folderId;
+		this.props.folderId = folderId ?? null;
 	}
 
 	public getStorageReference(): StorageReference {

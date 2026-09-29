@@ -69,7 +69,7 @@ export class FileRecordMikroOrmRepo implements FileRecordRepo {
 
 	public async findByParentAndFolderId(
 		parentId: EntityId,
-		folderId?: EntityId,
+		folderId?: EntityId | null,
 		options?: FindOptions<FileRecordEntity>
 	): Promise<Counted<FileRecord[]>> {
 		const scope = new FileRecordScope()

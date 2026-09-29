@@ -103,7 +103,7 @@ export class FilesStorageService {
 	 */
 	public async getFileRecordsByFolderScope(
 		parentId: EntityId,
-		folderId?: EntityId,
+		folderId?: EntityId | null,
 		options?: FindOptions<FileRecord>
 	): Promise<Counted<FileRecord[]>> {
 		const countedFileRecords = await this.fileRecordRepo.findByParentAndFolderId(parentId, folderId, options);

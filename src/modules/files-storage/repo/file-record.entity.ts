@@ -84,7 +84,7 @@ export class FileRecordEntity extends BaseEntityWithTimestamps implements FileRe
 
 	@Index()
 	@Property({ type: ObjectIdType, fieldName: 'folder', nullable: true })
-	folderId?: EntityId;
+	folderId?: EntityId | null;
 
 	@Property({ persist: false })
 	domainObject: FileRecord | undefined;
