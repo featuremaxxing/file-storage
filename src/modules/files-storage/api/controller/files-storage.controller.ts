@@ -50,6 +50,7 @@ import {
 	ParentParams,
 	ParentStatisticResponse,
 	PreviewParams,
+	MoveFileParams,
 	RenameFileParams,
 	SingleFileParams,
 } from '../dto';
@@ -299,6 +300,24 @@ export class FilesStorageController {
 		@Query() pagination: PaginationParams
 	): Promise<FileRecordListResponse> {
 		const response = await this.filesStorageUC.getDeletedFileRecordsOfParent(params, pagination);
+
+		return response;
+	}
+
+	@ApiOperation({
+		summary: 'Move a single file to another parent in the same storage location. The file keeps its id.',
+	})
+	@ApiResponse({ status: 200, type: FileRecordResponse })
+	@ApiResponse({ status: 400, type: ApiValidationError })
+	@ApiResponse({ status: 403, type: ForbiddenException })
+	@ApiResponse({ status: 404, type: NotFoundException })
+	@Patch('/move/:fileRecordId/')
+	@UseInterceptors(RequestLoggingInterceptor)
+	public async moveFile(
+		@Param() params: SingleFileParams,
+		@Body() moveFileParams: MoveFileParams
+	): Promise<FileRecordResponse> {
+		const response = await this.filesStorageUC.moveFile(params, moveFileParams.target);
 
 		return response;
 	}

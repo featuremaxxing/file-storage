@@ -1,4 +1,5 @@
 /* eslint-disable max-classes-per-file */
+import { Type } from 'class-transformer';
 import { ScanResult } from '@infra/antivirus';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
@@ -142,6 +143,13 @@ export class RenameFileParams {
 export class CopyFileParams {
 	@ApiProperty()
 	@ValidateNested()
+	target!: FileRecordParams;
+}
+
+export class MoveFileParams {
+	@ApiProperty({ description: 'The new parent. The storage location must stay the same.' })
+	@ValidateNested()
+	@Type(() => FileRecordParams)
 	target!: FileRecordParams;
 }
 
