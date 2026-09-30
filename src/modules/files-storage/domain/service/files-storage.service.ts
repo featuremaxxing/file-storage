@@ -480,7 +480,11 @@ export class FilesStorageService {
 
 				return;
 			}
-			ArchiveFactory.appendFile(archive, fileResponse, archivePath);
+			if (archivePath === undefined) {
+				ArchiveFactory.appendFile(archive, fileResponse);
+			} else {
+				ArchiveFactory.appendFile(archive, fileResponse, archivePath);
+			}
 		});
 	}
 

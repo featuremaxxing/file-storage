@@ -62,7 +62,21 @@ export class ArchiveFactory {
 			archive.abort();
 			archive.emit('error', normalizedError);
 		});
-		archive.append(fileResponse.data, { name: archivePath ?? fileResponse.name });
+		archive.append(fileResponse.data, { name: this.sanitizeArchivePath(archivePath ?? fileResponse.name) });
+	}
+
+	/**
+	 * Archive paths originate in a client request. Keep their folder structure, but never let an
+	 * archive entry escape its root when a user extracts it later.
+	 */
+	private static sanitizeArchivePath(path: string): string {
+		const segments = path
+			.replaceAll('\\', '/')
+			.split('/')
+			.filter((segment) => segment.length > 0 && segment !== '.' && segment !== '..')
+			.map((segment) => segment.replaceAll('\0', ''));
+
+		return segments.join('/') || 'file';
 	}
 
 	private static toError(err: unknown): Error {
