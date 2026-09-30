@@ -51,7 +51,7 @@ export class ArchiveFactory {
 		return archive;
 	}
 
-	public static appendFile(archive: archiver.Archiver, fileResponse: GetFileResponse): void {
+	public static appendFile(archive: archiver.Archiver, fileResponse: GetFileResponse, archivePath?: string): void {
 		fileResponse.data.once('error', (err: unknown) => {
 			const normalizedError = this.toError(err);
 
@@ -62,7 +62,7 @@ export class ArchiveFactory {
 			archive.abort();
 			archive.emit('error', normalizedError);
 		});
-		archive.append(fileResponse.data, { name: fileResponse.name });
+		archive.append(fileResponse.data, { name: archivePath ?? fileResponse.name });
 	}
 
 	private static toError(err: unknown): Error {

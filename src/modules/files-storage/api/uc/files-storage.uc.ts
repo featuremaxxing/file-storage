@@ -212,7 +212,11 @@ export class FilesStorageUC {
 
 		await this.checkPermissions(uniqueParentReferences, FileStorageAuthorizationContext.read);
 
-		const fileResponse = this.filesStorageService.downloadFilesAsArchive(downloadableFileRecords, params.archiveName);
+		const fileResponse = this.filesStorageService.downloadFilesAsArchive(
+			downloadableFileRecords,
+			params.archiveName,
+			params.paths
+		);
 
 		return fileResponse;
 	}
