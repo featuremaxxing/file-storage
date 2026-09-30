@@ -3,6 +3,7 @@ import { DomainErrorHandler } from '@infra/error';
 import { Logger } from '@infra/logger';
 import { CopyFiles, S3ClientAdapter } from '@infra/s3-client';
 import {
+	BadRequestException,
 	ConflictException,
 	ForbiddenException,
 	HttpException,
@@ -320,6 +321,24 @@ export class FilesStorageService {
 		if (duplicateFound) {
 			throw new ConflictException(ErrorType.FILE_NAME_EXISTS);
 		}
+	}
+
+	public async moveFileRecord(fileRecord: FileRecord, target: ParentInfo): Promise<FileRecord> {
+		const { storageLocationId, storageLocation, storageType } = fileRecord.getStorageReference();
+		if (target.storageLocationId !== storageLocationId || target.storageLocation !== storageLocation) {
+			throw new BadRequestException(ErrorType.MOVE_TO_OTHER_STORAGE_LOCATION);
+		}
+		if (fileRecord.getParentReference().parentId === target.parentId) {
+			return fileRecord;
+		}
+
+		const [fileRecordsOfTarget, count] = await this.getFileRecordsByParentAndStorageType(target.parentId, storageType);
+		this.checkFileLimitPerParent(count);
+		fileRecord.setName(this.resolveFileName(fileRecord.getName(), count, fileRecordsOfTarget));
+		fileRecord.moveTo({ parentId: target.parentId, parentType: target.parentType });
+		await this.fileRecordRepo.save(fileRecord);
+
+		return fileRecord;
 	}
 
 	public async patchFilename(fileRecord: FileRecord, fileName: string): Promise<FileRecord> {

@@ -273,6 +273,13 @@ export class FileRecord extends DomainObject<FileRecordProps> {
 		return isEditable;
 	}
 
+	// The content in the object storage is addressed by storage location and file id only, so a
+	// file keeps its id (and all links to it) when it gets another parent.
+	public moveTo(parent: ParentReference): void {
+		this.props.parentId = parent.parentId;
+		this.props.parentType = parent.parentType;
+	}
+
 	public getParentReference(): ParentReference {
 		const { parentId, parentType } = this.props;
 

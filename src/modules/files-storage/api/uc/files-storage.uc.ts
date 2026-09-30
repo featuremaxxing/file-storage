@@ -359,6 +359,22 @@ export class FilesStorageUC {
 	}
 
 	// update
+	public async moveFile(params: SingleFileParams, target: FileRecordParams): Promise<FileRecordResponse> {
+		const fileRecord = await this.filesStorageService.getFileRecord(params.fileRecordId);
+		const parentReference = fileRecord.getParentReference();
+
+		// like a copy followed by a delete: the file leaves its parent and is added to the target
+		await Promise.all([
+			this.checkPermission(parentReference, FileStorageAuthorizationContext.delete),
+			this.checkPermission(target, FileStorageAuthorizationContext.create),
+		]);
+
+		const movedFileRecord = await this.filesStorageService.moveFileRecord(fileRecord, target);
+		const status = this.filesStorageService.getFileRecordStatus(movedFileRecord);
+
+		return FileRecordMapper.mapToFileRecordResponse(movedFileRecord, status);
+	}
+
 	public async patchFilename(params: SingleFileParams, data: RenameFileParams): Promise<FileRecordResponse> {
 		const fileRecord = await this.filesStorageService.getFileRecord(params.fileRecordId);
 		const parentReference = fileRecord.getParentReference();
