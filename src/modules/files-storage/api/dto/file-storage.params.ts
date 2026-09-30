@@ -130,6 +130,16 @@ export class ArchiveFileParams implements MultipleFileRecordIdentifier {
 	@ApiProperty()
 	@IsString()
 	archiveName!: string;
+
+	@ApiPropertyOptional({
+		description:
+			'Optional map of fileRecordId to the path it should get inside the zip (including any ' +
+			'folder segments), so a caller that already knows the folder structure of the selected ' +
+			'files can preserve it in the archive. Ids without an entry fall back to their flat name.',
+	})
+	@IsOptional()
+	@StringToObject(ArchiveFileParams)
+	paths?: Record<EntityId, string>;
 }
 
 export class RenameFileParams {

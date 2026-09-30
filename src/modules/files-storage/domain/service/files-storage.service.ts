@@ -404,20 +404,30 @@ export class FilesStorageService {
 		return fileResponse;
 	}
 
-	public downloadFilesAsArchive(fileRecords: FileRecord[], archiveName: string): GetFileResponse {
+	public downloadFilesAsArchive(
+		fileRecords: FileRecord[],
+		archiveName: string,
+		archivePathsByFileRecordId?: Record<EntityId, string>
+	): GetFileResponse {
 		if (fileRecords.length === 0) {
 			throw new NotFoundException(ErrorType.NO_FILES_IN_ARCHIVE);
 		}
 
 		const archive = ArchiveFactory.createEmpty(fileRecords, this.logger);
-		this.populateArchiveAndFinalize(archive, fileRecords).catch((err) => archive.destroy(err));
+		this.populateArchiveAndFinalize(archive, fileRecords, archivePathsByFileRecordId).catch((err) =>
+			archive.destroy(err)
+		);
 
 		const fileResponse = FileResponseFactory.createFromArchive(archiveName, archive);
 
 		return fileResponse;
 	}
 
-	private async populateArchiveAndFinalize(archive: Archiver, files: FileRecord[]): Promise<void> {
+	private async populateArchiveAndFinalize(
+		archive: Archiver,
+		files: FileRecord[],
+		archivePathsByFileRecordId?: Record<EntityId, string>
+	): Promise<void> {
 		for (const file of files) {
 			if (archive.destroyed) {
 				return;
@@ -425,13 +435,13 @@ export class FilesStorageService {
 
 			const fileResponse = await this.downloadFile(file);
 
-			await this.appendAndWaitForEntry(archive, fileResponse);
+			await this.appendAndWaitForEntry(archive, fileResponse, archivePathsByFileRecordId?.[file.id]);
 		}
 
 		await archive.finalize();
 	}
 
-	private appendAndWaitForEntry(archive: Archiver, fileResponse: GetFileResponse): Promise<void> {
+	private appendAndWaitForEntry(archive: Archiver, fileResponse: GetFileResponse, archivePath?: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			/* istanbul ignore next */
 			if (archive.destroyed) {
@@ -470,7 +480,11 @@ export class FilesStorageService {
 
 				return;
 			}
-			ArchiveFactory.appendFile(archive, fileResponse);
+			if (archivePath === undefined) {
+				ArchiveFactory.appendFile(archive, fileResponse);
+			} else {
+				ArchiveFactory.appendFile(archive, fileResponse, archivePath);
+			}
 		});
 	}
 
